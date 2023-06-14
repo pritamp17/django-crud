@@ -81,23 +81,29 @@ class LogoutView(APIView):
         return Response({'message': 'Logout successful'})
     
 class UpdateProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+     permission_classes = [IsAuthenticated]
 
-    def patch(self, request):
-        print(request.META)
-        email = request.data.get('email')  # Access the email from request data
+     def patch(self, request):
+        # print(request.META)
+        email = request.data.get('email') 
         try:
             profile = UserModel.objects.get(email=email)
         except UserModel.DoesNotExist:
             return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Exclude email from update
-        updated_data = {
-            'name': request.data.get('name', profile.name),
-            'password': request.data.get('password', profile.password),
-            'bio': request.data.get('bio', profile.bio),
-            'profile_picture': request.data.get('profile_picture', profile.profile_picture)
-        }
+        updated_data = {}
+
+        if 'name' in request.data:
+            updated_data['name'] = request.data['name']
+
+        if 'password' in request.data:
+            updated_data['password'] = request.data['password']
+
+        if 'bio' in request.data:
+            updated_data['bio'] = request.data['bio']
+
+        if 'profile_picture' in request.data:
+            updated_data['profile_picture'] = request.data['profile_picture']
 
         serializer = UserProfileSerializer(profile, data=updated_data, partial=True)
 
@@ -108,8 +114,8 @@ class UpdateProfileView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class DeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
 
     def delete(self, request):
         try:
