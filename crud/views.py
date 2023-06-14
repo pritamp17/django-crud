@@ -32,16 +32,19 @@ class SignUpView(APIView):
         user = UserModel(name=name, email=email, password=hashed_password, bio=bio, profile_picture=profile_picture)
         user.save()
         return Response({'message': 'Cool! Sign up successful, Now you can login'})
-    
+
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        
+        print(request)
         if not email or not password:
             return Response({'error': 'Please provide both email and password'}, status=status.HTTP_400_BAD_REQUEST)
     
-        user = UserModel.objects.get(email=email)
+        try:
+            user = UserModel.objects.get(email=email)
+        except UserModel.DoesNotExist:
+            return Response({'error': 'User with the specified email does not exist'}, status=status.HTTP_404_NOT_FOUND)
         authenticated_User = None
 
         if email is not None and password is not None: 
@@ -80,10 +83,11 @@ class LogoutView(APIView):
 class UpdateProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def put(self, request):
-        user = request.user
+    def patch(self, request):
+        print(request.META)
+        email = request.data.get('email')  # Access the email from request data
         try:
-            profile = UserModel.objects.get(email=user.email)
+            profile = UserModel.objects.get(email=email)
         except UserModel.DoesNotExist:
             return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
